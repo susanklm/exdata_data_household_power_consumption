@@ -1,0 +1,101 @@
+---
+title: "Course4_wk1_project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading the data
+
+#### When loading the dataset into R, please consider the following:
+* The dataset has 2,075,259 rows and 9 columns. First calculate a rough estimate of how much memory the dataset will require in memory before reading into R. Make sure your computer has enough memory (most modern computers should be fine).
+```{r}
+row <- 2075259
+col <- 9
+# Assume all are numeric data. on most modern computers double precision floating point numbers are stored using 64 bits of memory, or 8 bytes. Given that information, you can do the following calculation
+memory <- (row * col * 8)/2^{20}
+# In megabytes
+memory
+# In gigabytes
+memory/1000
+# Most computers these days have at least that much RAM.
+```
+
+* We will only be using data from the dates 2007-02-01 and 2007-02-02. One alternative is to read the data from just those dates rather than reading in the entire dataset and subsetting to those dates.
+
+
+* You may find it useful to convert the Date and Time variables to Date/Time classes in R using the strptime() and as.Date() functions.
+
+* Note that in this dataset missing values are coded as ?.
+
+```{r}
+setwd("D:/Online Courses/Data Science Foundations using R Specialization/Course 4 Exploratory Data Analysis/Week 1/exdata_data_household_power_consumption")
+df = read.table('household_power_consumption.txt', sep=";", nrows = 300000, na.strings = "?", header=TRUE)
+names(df)
+tail(df,2)
+str(df)
+
+# convert the date and time variable to Date and time class
+df$Date <- as.Date(df$Date, format = "%d/%m/%Y")
+head(df)
+df$Time <- format(strptime(df$Time, "%H:%M:%S"),"%H:%M:%S")
+
+# Subset the data
+df <- subset(df, subset = (Date >= "2007-02-01" & Date <= "2007-02-02"))
+head(df)
+```
+#### Plot plot1
+```{r}
+hist(df$Global_active_power, main = "Global Active Power", 
+     xlab = "Global Active Power (kilowatts)", col = "Red")
+# Save plot1
+dev.copy(png, file = "plot1.png", height = 480, width = 480)
+dev.off()
+```
+
+#### Plot plot2
+```{r}
+# Convert dates and times
+df$datetime <- strptime(paste(df$Date, df$Time), "%Y-%m-%d %H:%M:%S")
+df$datetime <- as.POSIXct(df$datetime)
+plot(df$Global_active_power ~ df$datetime, type = "l", 
+     xlab = "", ylab = "Global Active Power (kilowatts)")
+# Save plot2
+dev.copy(png, file = "plot2.png", height = 480, width = 480)
+dev.off()
+```
+
+#### Plot plot3
+```{r}
+x <-  df$datetime
+y1 <- df$Sub_metering_1
+y2 <- df$Sub_metering_2
+y3 <- df$Sub_metering_3
+plot(x, y1,type="l", ylab = "Energy sub metering", xlab = "")
+lines(x,y2,col="red")
+lines(x,y3, col ="blue")
+legend("topright", lty = 1, col = c("black", "red", "blue"), legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"))
+# Save plot3
+dev.copy(png, file = "plot3.png", height = 480, width = 480)
+dev.off()
+```
+#### Plot plot4
+```{r}
+par(mfrow = c(2, 2))
+plot(df$Global_active_power ~ df$datetime, type = "l", 
+     xlab = "", ylab = "Global Active Power")
+
+plot(df$Voltage ~ df$datetime, type = "l", xlab = "datetime", ylab = "Voltage")
+
+plot(x, y1,type="l", ylab = "Energy sub metering", xlab = "")
+lines(x,y2,col="red")
+lines(x,y3, col ="blue")
+legend("topright", lty = 1, bty = "n", col = c("black", "red", "blue"), legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"))
+
+plot(df$Global_reactive_power ~ df$datetime, type = "l", xlab = "datetime", ylab = "Global_reactive_power")
+
+dev.copy(png, file = "plot4.png", height = 480, width = 480)
+dev.off()
+```
